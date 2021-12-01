@@ -26,11 +26,7 @@ class BodyType(models.Model):
         VAN = 'Van'
 
     body_type = models.CharField(choices=TypeOfBody.choices, max_length=50)
-    generations = models.ManyToManyField(
-        Generation,
-        through='AvailableEngine',
-        # through_fields=('generation', 'body_type'),
-    )
+    generations = models.ManyToManyField(Generation)
 
 
 class Engine(models.Model):
@@ -64,15 +60,8 @@ class Transmission(models.Model):
     number_of_gears = models.PositiveSmallIntegerField()
 
 
-class AvailableEngine(models.Model):
-    generation = models.ForeignKey(Generation, on_delete=models.CASCADE)
-    body_type = models.ForeignKey(BodyType, on_delete=models.CASCADE)
-    engines = models.ManyToManyField(Engine)
-    transmissions = models.ManyToManyField(Transmission)
-
-
 class CarStats(models.Model):
-    engine = models.ForeignKey(AvailableEngine, on_delete=models.CASCADE)
+    engine = models.ForeignKey(Engine, on_delete=models.CASCADE)
     transmission = models.ForeignKey(
         Transmission, null=True, on_delete=models.CASCADE)
     # ---- general stats ----
@@ -96,15 +85,14 @@ class CarStats(models.Model):
     weight = models.PositiveSmallIntegerField(null=True, blank=True)
     # ---- performance stats ----
     v_max = models.PositiveSmallIntegerField(null=True, blank=True)
-    acceleration_0_100 = models.PositiveSmallIntegerField(
-        null=True, blank=True)
-    acceleration_100_200 = models.PositiveSmallIntegerField(
-        null=True, blank=True)
-    acceleration400 = models.PositiveSmallIntegerField(
-        help_text='Acceleration time from 0 to 400 meters', null=True,
+    acceleration_0_100 = models.FloatField(null=True, blank=True)
+    acceleration_100_200 = models.FloatField(null=True, blank=True)
+    time400 = models.FloatField(
+        help_text='Time of 400 meters drag race', null=True,
         blank=True,
     )
-    nurburgring_lap_time = models.DateTimeField(null=True, blank=True)
+    nurburgring_lap_time = models.PositiveSmallIntegerField(
+        null=True, blank=True)
 
 
 def round_engine_capacity(capacity: models.PositiveSmallIntegerField):
@@ -121,4 +109,4 @@ def round_engine_capacity(capacity: models.PositiveSmallIntegerField):
     capa_with_dot = f'{rounded_capa[:-1]}.{rounded_capa[-1]}'
     return capa_with_dot if capa_with_dot[0] != '.' else '0' + capa_with_dot
 
-#from cars.models import Car, Generation, TypeOfBody, BodyType, Engine, AvailableEngine, CarStats, Transmission, TransmissionType
+#from cars.models import Car, Generation, TypeOfBody, BodyType, Engine, CarStats, Transmission, TransmissionType
